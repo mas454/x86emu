@@ -54,3 +54,19 @@
     (let1 address (calc-memory-address emu modrm)
       (set-memory32 emu address value))))
 
+(define (calc-memory-address-mod-0 emu modrm)
+  (cond [(= (ref modrm 'rm) 4)
+	 (error "not implemented ModRM mod = 0, rm = 4\n")]
+	[(= (ref modrm 'rm) 5)
+	 (ref modrm 'disp32)]
+	[else
+	  (get-register32 emu (ref modrm 'rm))]))
+
+(define (calc-memory-address-mod-1 emu modrm)
+  (cond [(= (ref modrm 'rm) 4)
+	 (error "not implemented ModRM mod = 1, rm = 4\n")]
+	[else
+	  (+ (get-register32 emu (ref modrm 'rm)) (ref modrm 'disp8))]))
+
+(define (calc-memory-address-mod-2 emu modrm)
+
