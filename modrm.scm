@@ -1,5 +1,7 @@
-(define-module modrm) 
-;  (export ))
+(define-module modrm 
+  (export opecode reg-index init parse-modrm 
+	  set-rm32 get-rm32 set-r32
+	  calc-memory-address))
 (select-module modrm)
 (use emu)
 
@@ -22,7 +24,7 @@
   (let1 slot-names (map slot-definition-name (class-slots <modrm>))
     (for-each (lambda (s) (set! (ref m s) 0)) slot-names)))
 
-(define (parse_modrm emu mr)
+(define (parse-modrm emu mr)
   (let ([code (get-code8 emu 0)])
     (init mr)
     (set! (ref mr 'mod) (ash (logand code #xC0) -6))
@@ -54,7 +56,10 @@
     (let1 address (calc-memory-address emu modrm)
       (set-memory32 emu address value))))
 
-;(define (get-rm32 emu modrm)
+(define (get-rm32 emu modrm)
+  (if (= (ref modrm 'mod) 3)
+    (get-register32 emu (ref modrm 'rm))
+    (get-memory32 emu (calc-memory-address emu modrm))))
  
 (define (calc-memory-address-mod-0 emu modrm)
   (cond [(= (ref modrm 'rm) 4)
@@ -87,4 +92,5 @@
 	  [else
 	    (error "not implemented ModRM mod = 3\n")])))
 
-
+(define (set-r32 emu modrm value)
+  (set-register32 emu (ref modrm reg-index) value))
