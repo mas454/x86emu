@@ -40,9 +40,12 @@
 
 (define test-emu (create-emu memory-size 0 0))
 
+(define (test-main)
+  (set-memory32 test-emu 0 (expt 2 31))
+  (print (get-memory32 test-emu 0)))
+
 (define (main args)
   ;(emu-run (cadr args))
-  (set-memory8 test-emu 0 100)
-  (print (get-memory8 test-emu 0))
+  (test-main) 
   0)
 

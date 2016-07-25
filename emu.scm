@@ -97,6 +97,11 @@
 (define (get-memory8 emu address)
   (ref (ref emu 'memory) address))
 
-
+(define (get-memory32 emu address)
+  (let loop ((i 0) (ret 0))
+    (if (< i 4)
+      (loop (+ i 1) 
+	    (logior ret (ash (get-memory8 emu (+ address i)) (* i 8))))
+      ret)))
 
 (provide "emu")
