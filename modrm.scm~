@@ -94,7 +94,3 @@
 
 (define (set-r32 emu modrm value)
   (set-register32 emu (ref modrm reg-index) value))
-
-(define (get-r32 emu modrm)
-  (get-register32 emu (ref modrm reg-index)))
-
