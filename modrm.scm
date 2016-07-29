@@ -1,7 +1,9 @@
 (define-module modrm 
   (export opecode reg-index init parse-modrm 
-	  set-rm32 get-rm32 set-r32
-	  calc-memory-address))
+	  set-rm32 get-rm32 set-r32 get-r32
+	  calc-memory-address
+	  <modrm>
+	  ))
 (select-module modrm)
 (use emu)
 
@@ -29,7 +31,7 @@
     (init mr)
     (set! (ref mr 'mod) (ash (logand code #xC0) -6))
     (set! (ref mr opecode) (ash (logand code #x38) -3))
-    (set! (ref mr 'rm) (logand #x07))
+    (set! (ref mr 'rm) (logand code #x07))
     
     (eip-add emu 1)
     
