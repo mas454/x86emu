@@ -48,7 +48,6 @@
 (define (sub-rm32-imm8 emu modrm)
   (let* ([rm32 (get-rm32 emu modrm)]
 	 [imm8 (get-code8 emu 0)])
-    ;(print rm32)
     (eip-add emu 1)
     (set-rm32 emu modrm (- rm32 imm8))))
 

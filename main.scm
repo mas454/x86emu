@@ -45,7 +45,7 @@
   (print (get-memory32 test-emu 0)))
 
 (define (main args)
-  (emu-run (cadr args))
-  ;(test-main) 
+  ;(emu-run (cadr args))
+  (test-main) 
   0)
 

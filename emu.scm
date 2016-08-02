@@ -46,7 +46,7 @@
 (define-method set-register32 ((emu <emulator>) index value)
 	       (set-register32 (ref emu 'registers) index value))
 
-(define-method get-register32 ((emu <emulator>) index)
+(define-method get-register32 ((emu <emulator>) index value)
 	       (get-register32 (ref emu 'registers) index))
 
 (define-method eip-add ((emu <emulator>) n)
