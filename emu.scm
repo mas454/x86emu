@@ -20,6 +20,13 @@
   )
 (define register-name '(eax ecx edx ebx esp ebp esi edi))
 
+(define (get-register-number1 name n lis)
+  (if (eq? name (car lis))
+    n
+    (get-register-number1 name (+ n 1) (cdr lis))))
+
+(define (get-register-number name)
+  (get-register-number1 name 0 register-name))
 
 (define-class <emulator> ()
   ((memory :init-keyword :memory)
@@ -103,5 +110,12 @@
       (loop (+ i 1) 
 	    (logior ret (ash (get-memory8 emu (+ address i)) (* i 8))))
       ret)))
+
+
+(define (push32 emu value)
+  (let* ([esp (get-register-number 'esp)]
+	 [address (- (get-register32 emu esp) 4)])
+    (set-register32 emu esp address)
+    (set-memory32 emu address value)))
 
 (provide "emu")
