@@ -118,4 +118,11 @@
     (set-register32 emu esp address)
     (set-memory32 emu address value)))
 
+(define (pop32 emu)
+  (let* ([esp (get-register-number 'esp)]
+	 [address (get-register32 emu esp)]
+	 [ret (get-memory32 emu address)])
+    (set-register32 emu esp (+ address 4))
+    ret))
+
 (provide "emu")
