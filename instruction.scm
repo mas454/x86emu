@@ -81,6 +81,16 @@
 	  )
     ))
 
+(define (push-r32 emu)
+  (let1 reg (- (get-code8 emu 0) #x50) 
+    (push32 emu (get-register32 emu reg))
+    (eip-add emu 1)))
+
+(define (pop-r32 emu)
+  (let1 reg (- (get-code8 emu 0) #x58)
+    (set-register32 emu reg (pop32 emu))
+    (eip-add emu 1)))
+
 (define (get-instructions code)
   (cond 
     [(= code #x01) add-rm32-r32]
