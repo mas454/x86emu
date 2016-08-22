@@ -91,6 +91,14 @@
     (set-register32 emu reg (pop32 emu))
     (eip-add emu 1)))
 
+(define (call-rel32 emu)
+  (let1 diff (get-sign-code32 emu 1)
+    (push32 emu (+ (ref emu 'eip) 5))
+    (eip-add emu (+ diff 5))))
+
+(define (ret emu)
+  (set! (ref emu 'eip) (pop32 emu)))
+
 (define (get-instructions code)
   (cond 
     [(= code #x01) add-rm32-r32]
@@ -99,9 +107,13 @@
     [(= code #x8b) mov-r32-rm32]
     [(and (<= #xb8 code) (<= code (+ #xb8 7)))
 	 mov-r32-imm32]
+
+    [(= code #xc3) ret]
     [(= code #xc7) mov-rm32-imm32]
-    [(= code #xeb) short-jump]
+
+    [(= code #xe8) call-rel32]
     [(= code #xe9) near-jump]
+    [(= code #xeb) short-jump]
     [(= code #xff) code-ff]
     [else '()]))
 
