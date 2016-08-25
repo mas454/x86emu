@@ -20,6 +20,9 @@
   )
 (define register-name '(eax ecx edx ebx esp ebp esi edi))
 
+(define-constant ESP 4)
+(define-constant EBP 5)
+
 (define (get-register-number1 name n lis)
   (if (eq? name (car lis))
     n
@@ -38,7 +41,6 @@
 (define-method dump-registers ((reg <registers>))
 	(for-each (lambda (s)
 		    (format #t "~a = ~8,'0x\n" s (ref reg s))) register-name))
-
 (define-method set-register32 ((reg <registers>) index value)
 	       (set! (ref reg (list-ref register-name index)) value))
 
@@ -58,6 +60,14 @@
 
 (define-method eip-add ((emu <emulator>) n)
 	       (set! (ref emu 'eip) (+ (ref emu 'eip) n)))
+
+(define-method dump-memory ((emu <emulator>) min max)
+       (let loop ([i min])
+	 (when (< i max)
+	   (format #t "~8,'0x : ~4,'0x\n"
+		   i
+		   (get-memory8 emu i))
+	   (loop (+ i 1)))))
 
 (define (create-emu size eip esp)
   (make <emulator> :memory (make-u8vector size 0)

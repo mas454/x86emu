@@ -36,6 +36,7 @@
       (lambda (p)
 	(memory-load emu p)
 	(run emu)
+	;(dump-memory emu (- #x7c00 20) #x7c01)
 	(dump-registers emu)))))
 
 (define test-emu (create-emu memory-size 0 0))

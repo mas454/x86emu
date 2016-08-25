@@ -56,12 +56,15 @@
   (eip-add emu 1)
   (let ([modrm (make <modrm>)])
     (parse-modrm emu modrm)
-    (cond [(= (ref modrm opecode) 5)
-	   (sub-rm32-imm8 emu modrm)]
-	  [else
-	    (error (string-append "not implemented: 83 "
-				  (number->string (ref modrm opecode))
-				  "\n"))])))
+    (cond 
+      [(= (ref modrm opecode) 0)
+       (add-rm32-imm8 emu modrm)]
+      [(= (ref modrm opecode) 5)
+       (sub-rm32-imm8 emu modrm)]
+      [else
+	(error (string-append "not implemented: 83 "
+			      (number->string (ref modrm opecode))
+			      "\n"))])))
 
 (define (inc-rm32 emu modrm)
   (set-rm32 emu modrm (+ (get-rm32 emu modrm) 1)))
@@ -91,6 +94,20 @@
     (set-register32 emu reg (pop32 emu))
     (eip-add emu 1)))
 
+(define (push-imm32 emu)
+  (push32 emu (get-code32 emu 1))
+  (eip-add emu 5))
+
+(define (push-imm8 emu)
+  (push32 emu (get-code8 emu 1))
+  (eip-add emu 2))
+
+(define (add-rm32-imm8 emu modrm)
+  (let ([rm32 (get-rm32 emu modrm)]
+	[imm8 (get-code8 emu 1)])
+   (eip-add emu 1)
+   (set-rm32 emu modrm (+ rm32 imm8))))
+
 (define (call-rel32 emu)
   (let1 diff (get-sign-code32 emu 1)
     (push32 emu (+ (ref emu 'eip) 5))
@@ -99,9 +116,24 @@
 (define (ret emu)
   (set! (ref emu 'eip) (pop32 emu)))
 
+(define (leave emu)
+  (let ([ebp (get-register32 emu EBP)])
+    (set-register32 emu ESP ebp)
+    (set-register32 emu EBP (pop32 emu))
+    (eip-add emu 1)))
+
+
+
 (define (get-instructions code)
   (cond 
     [(= code #x01) add-rm32-r32]
+    [(and (<= #x50 code) (> #x58 code)) push-r32]
+    [(and (<= #x58 code) (> #x60 code)) pop-r32]
+	
+    [(= code #x68) push-imm32]
+    [(= code #x6A) push-imm8]
+
+
     [(= code #x83) code-83]
     [(= code #x89) mov-rm32-r32]
     [(= code #x8b) mov-r32-rm32]
@@ -110,6 +142,7 @@
 
     [(= code #xc3) ret]
     [(= code #xc7) mov-rm32-imm32]
+    [(= code #xc9) leave]
 
     [(= code #xe8) call-rel32]
     [(= code #xe9) near-jump]
