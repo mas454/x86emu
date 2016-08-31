@@ -23,6 +23,12 @@
 (define-constant ESP 4)
 (define-constant EBP 5)
 
+(define-constant CARRY-FLAG 1)
+(define-constant ZERO-FLAG (ash 1 6))
+(define-constant SIGN-FLAG (ash 1 7))
+(define-constatn OVERFLOW-FLAG (ash 1 1))
+
+
 (define (get-register-number1 name n lis)
   (if (eq? name (car lis))
     n
@@ -68,6 +74,8 @@
 		   i
 		   (get-memory8 emu i))
 	   (loop (+ i 1)))))
+
+;(define-method 
 
 (define (create-emu size eip esp)
   (make <emulator> :memory (make-u8vector size 0)
@@ -134,5 +142,16 @@
 	 [ret (get-memory32 emu address)])
     (set-register32 emu esp (+ address 4))
     ret))
+
+(define (make-set-flag flag)
+  (lambda (emu is)
+    (if (not (zero? is))
+      (set! (ref emu 'eflags) (logior (ref emu 'eflags) flag))
+      (set! (ref emu 'eflags) (logand (ref emu 'eflags) (lognot flag))))))
+
+(define set-carry (make-set-flag CARRY-FLAG))
+(define set-zero (make-set-flag ZERO-FLAG))
+(define set-sign (make-set-flag SIGN-FLAG))
+(define set-overflow (make-set-flag OVERFLOW-FLAG))
 
 (provide "emu")
