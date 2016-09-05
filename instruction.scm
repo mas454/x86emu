@@ -122,6 +122,27 @@
     (set-register32 emu EBP (pop32 emu))
     (eip-add emu 1)))
 
+(define (cmp-r32-rm32 emu)
+  (let ([modrm (make <modrm>)])
+    (parse-modrm emu modrm)
+    (let* ([r32 (get-r32 emu modrm)]
+	   [rm32 (num32->2complement (get-rm32 emu modrm))]
+	   [result (+ r32 rm32)])
+      (update-eflags-sub emu r32 rm32 result))))
+
+(define (cmp-rm32-imm8 emu modrm)
+  (let ([rm32 (get-rm32 emu modrm)]
+	[imm8 (num32->2complement (get-code8 emu 0))])
+    (eip-add emu 1)
+    (update-eflags-sub emu rm32 imm8 (+ rm32 imm8))))
+
+(define (sum-rm32-imm8 emu modrm)
+  (let ([rm32 (get-rm32 emu modrm)]
+	[imm8 (num32->2complement (get-code8 emu 0))])
+    (eip-add emu 1)
+    (let ([result (+ rm32 imm8)])
+      (set-rm32 emu modrm result)
+      (update-eflags-sub emu rm32 imm8 result))))
 
 
 (define (get-instructions code)

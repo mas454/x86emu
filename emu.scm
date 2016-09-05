@@ -28,6 +28,11 @@
 (define-constant SIGN-FLAG (ash 1 7))
 (define-constatn OVERFLOW-FLAG (ash 1 1))
 
+(define (num8->2complement num)
+  (+ (logxor num #b11111111) 1))
+
+(define (num32->2complement num)
+  (+ (logxor num (- (expt 2 32) 1) ) 1))
 
 (define (get-register-number1 name n lis)
   (if (eq? name (car lis))
@@ -143,11 +148,20 @@
     (set-register32 emu esp (+ address 4))
     ret))
 
+(define (update-eflags-sub emu v1 v2 result)
+  (let* ([sign1 (ash v1 -31)]
+	 [sign2 (ash v2 -31)]
+	 [signr (logand (ash result -31) 1)])
+    (set-carry emu (not (zero? (ash result -32))))
+    (set-zero emu (zero? result))
+    (set-sign emu (not (zero? signr)))
+    (set-overflow emu (and (not (= sign1 sign2)) (not (= sign1 signr))))))
+
 (define (make-set-flag flag)
   (lambda (emu is)
-    (if (not (zero? is))
-      (set! (ref emu 'eflags) (logior (ref emu 'eflags) flag))
-      (set! (ref emu 'eflags) (logand (ref emu 'eflags) (lognot flag))))))
+    (if is
+      [set! (ref emu 'eflags) (logior (ref emu 'eflags) flag)]
+      [set! (ref emu 'eflags) (logand (ref emu 'eflags) (lognot flag))])))
 
 (define set-carry (make-set-flag CARRY-FLAG))
 (define set-zero (make-set-flag ZERO-FLAG))
