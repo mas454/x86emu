@@ -45,12 +45,12 @@
 	   [rm32 (get-rm32 emu modrm)])
       (set-rm32 emu modrm (+ rm32 r32)))))
 
-(define (sub-rm32-imm8 emu modrm)
-  (let* ([rm32 (get-rm32 emu modrm)]
-	 [imm8 (get-code8 emu 0)])
+;(define (sub-rm32-imm8 emu modrm)
+ ; (let* ([rm32 (get-rm32 emu modrm)]
+;	 [imm8 (num32->2complement (get-code8 emu 0))])
     ;(print rm32)
-    (eip-add emu 1)
-    (set-rm32 emu modrm (- rm32 imm8))))
+ ;   (eip-add emu 1)
+  ;  (set-rm32 emu modrm (+ rm32 imm8))))
 
 (define (code-83 emu)
   (eip-add emu 1)
@@ -61,6 +61,8 @@
        (add-rm32-imm8 emu modrm)]
       [(= (ref modrm opecode) 5)
        (sub-rm32-imm8 emu modrm)]
+      [(= (ref modrm opecode) 7)
+       (cmp-rm32-imm8 emu modrm)]
       [else
 	(error (string-append "not implemented: 83 "
 			      (number->string (ref modrm opecode))
@@ -126,28 +128,32 @@
   (let ([modrm (make <modrm>)])
     (parse-modrm emu modrm)
     (let* ([r32 (get-r32 emu modrm)]
-	   [rm32 (num32->2complement (get-rm32 emu modrm))]
-	   [result (+ r32 rm32)])
+	   [rm32  (get-rm32 emu modrm)]
+	   [result (+ r32 (num32->2complement rm32))])
       (update-eflags-sub emu r32 rm32 result))))
 
 (define (cmp-rm32-imm8 emu modrm)
   (let ([rm32 (get-rm32 emu modrm)]
-	[imm8 (num32->2complement (get-code8 emu 0))])
+	[imm8  (get-code8 emu 0)])
     (eip-add emu 1)
-    (update-eflags-sub emu rm32 imm8 (+ rm32 imm8))))
+    (update-eflags-sub emu rm32 imm8 (+ rm32 (num32->2complement imm8)))))
 
-(define (sum-rm32-imm8 emu modrm)
+(define (sub-rm32-imm8 emu modrm)
   (let ([rm32 (get-rm32 emu modrm)]
-	[imm8 (num32->2complement (get-code8 emu 0))])
+	[imm8 (get-code8 emu 0)])
     (eip-add emu 1)
-    (let ([result (+ rm32 imm8)])
-      (set-rm32 emu modrm result)
+    (let ([result (+ rm32 (num32->2complement imm8))])
+      (set-rm32 emu modrm (copy-bit 32 result #f))
       (update-eflags-sub emu rm32 imm8 result))))
 
 
 (define (get-instructions code)
   (cond 
     [(= code #x01) add-rm32-r32]
+
+    [(= code #x3b) cmp-r32-rm32]
+
+
     [(and (<= #x50 code) (> #x58 code)) push-r32]
     [(and (<= #x58 code) (> #x60 code)) pop-r32]
 	

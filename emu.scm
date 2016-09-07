@@ -26,7 +26,7 @@
 (define-constant CARRY-FLAG 1)
 (define-constant ZERO-FLAG (ash 1 6))
 (define-constant SIGN-FLAG (ash 1 7))
-(define-constatn OVERFLOW-FLAG (ash 1 1))
+(define-constant OVERFLOW-FLAG (ash 1 11))
 
 (define (num8->2complement num)
   (+ (logxor num #b11111111) 1))
@@ -61,7 +61,8 @@
 
 (define-method dump-registers ((emu <emulator>))
 	       (dump-registers (ref emu 'registers))
-	       (format #t "~a = ~8,'0x\n" 'eip (ref emu 'eip)))
+	       (format #t "~a = ~8,'0x\n" 'eip (ref emu 'eip))
+               (format #t "~a = ~8,'0x\n" 'eflags (ref emu 'eflags)))
 
 (define-method set-register32 ((emu <emulator>) index value)
 	       (set-register32 (ref emu 'registers) index value))
@@ -85,6 +86,7 @@
 (define (create-emu size eip esp)
   (make <emulator> :memory (make-u8vector size 0)
 	           :registers (make <registers> :esp esp)
+		   :eflags 0
 		   :eip eip))
 
 (define (get-code8 emu index)
@@ -152,8 +154,8 @@
   (let* ([sign1 (ash v1 -31)]
 	 [sign2 (ash v2 -31)]
 	 [signr (logand (ash result -31) 1)])
-    (set-carry emu (not (zero? (ash result -32))))
-    (set-zero emu (zero? result))
+    (set-carry emu  (zero? (ash result -32)))
+    (set-zero emu (zero? (copy-bit 32 result #f)))
     (set-sign emu (not (zero? signr)))
     (set-overflow emu (and (not (= sign1 sign2)) (not (= sign1 signr))))))
 
