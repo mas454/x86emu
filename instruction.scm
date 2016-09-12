@@ -146,6 +146,22 @@
       (set-rm32 emu modrm (copy-bit 32 result #f))
       (update-eflags-sub emu rm32 imm8 result))))
 
+(define (make-jx is-flag)
+  (lambda (emu)
+    (if (is-flag emu)
+      (eip-add emu (+ (get-sign-code8 emu 1) 2))
+      (eip-add emu 2))))
+
+(define (make-jnx is-flag)
+  (lambda (emu)
+    (if (is-flag emu)
+      (eip-add emu 2)
+      (eip-add emu (+ (get-sign-code8 emu 1) 2)))))
+
+;(define (jl emu)
+ ; (if (not (eq? (is-sign? emu) (is-overflow? emu)))
+  ;  (eip-add (+ (get-sign-code8 emu) 2))
+   ; (eip-add emu 2)))
 
 (define (get-instructions code)
   (cond 
@@ -159,6 +175,18 @@
 	
     [(= code #x68) push-imm32]
     [(= code #x6A) push-imm8]
+
+    [(= code #x70) (make-jx is-overflow?)];jo
+    [(= code #x71) (make-jnx is-overflow?)];jno
+    [(= code #x72) (make-jx is-carry?)];jc
+    [(= code #x73) (make-jnx is-carry?)];jnc
+    [(= code #x74) (make-jx is-zero?)];jz
+    [(= code #x75) (make-jnx is-zero?)];jnz
+    [(= code #x78) (make-jx is-sign?)];js
+    [(= code #x79) (make-jnx is-sign?)];jns
+    [(= code #x7c) (make-jx is-jl?)];jl
+    [(= code #x7e) (make-jx is-jle?)];jle
+
 
 
     [(= code #x83) code-83]

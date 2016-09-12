@@ -170,4 +170,23 @@
 (define set-sign (make-set-flag SIGN-FLAG))
 (define set-overflow (make-set-flag OVERFLOW-FLAG))
 
+(define (is-carry? emu)
+  (logbit? 0 (ref emu 'eflags)))
+
+(define (is-zero? emu)
+  (logbit? 6 (ref emu 'eflags)))
+
+(define (is-sign? emu)
+  (logbit? 7 (ref emu 'eflags)))
+
+(define (is-overflow? emu)
+  (logbit? 11 (ref emu 'eflags)))
+
+(define (is-jl? emu)
+  (not (eq? (is-sign? emu) (is-overflow? emu))))
+
+(define (is-jle? emu)
+  (or (is-zero? emu) (is-jl? emu)))
+
+
 (provide "emu")
